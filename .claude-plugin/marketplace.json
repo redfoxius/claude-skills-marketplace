@@ -34,8 +34,8 @@
     {
       "name": "marketplace-release",
       "source": "./plugins/marketplace-release",
-      "description": "Publishes a skill to the redfoxius/claude-skills-marketplace repo: scaffolding a new skill's plugin.json/SKILL.md/marketplace.json entry, or packaging and tagging a versioned GitHub Release (zip + <name>-v<version> tag) for an existing one, keeping plugin.json/marketplace.json/SKILL.md version fields in sync.",
-      "version": "1.0.1",
+      "description": "Publishes a skill to the redfoxius/claude-skills-marketplace repo: scaffolding a new skill's plugin.json/SKILL.md/marketplace.json entry, or running scripts/release_skill.py to verify version agreement, zip, tag, publish a GitHub Release, and update the README's release link for an existing one.",
+      "version": "1.1.0",
       "author": {
         "name": "Oleksandr Kolomoiets"
       },
