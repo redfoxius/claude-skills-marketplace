@@ -1,0 +1,13 @@
+{
+  "name": "golang-architecture",
+  "displayName": "Golang Architecture",
+  "version": "1.0.0",
+  "description": "Forces Go-idiomatic package boundaries and dependency direction for backend modules: domain/business-logic packages never import a concrete infrastructure package directly, ports are interfaces declared by the consumer package, and every concrete adapter is constructed in one composition root.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["go", "golang", "architecture", "hexagonal", "onion-architecture", "ports-and-adapters"]
+}
