@@ -1,7 +1,7 @@
 ---
 name: marketplace-release
 description: "Publishes a skill to the redfoxius/claude-skills-marketplace Claude Code plugin repo: scaffolding plugins/<name>/.claude-plugin/plugin.json + skills/<name>/SKILL.md + a matching entry in .claude-plugin/marketplace.json for a brand-new skill, or packaging and tagging a GitHub Release (versioned zip, <name>-v<version> tag) for a version bump of an existing skill. Enforces that plugin.json, marketplace.json, and SKILL.md's version frontmatter stay numerically identical before any release is tagged. Use when asked to publish, release, or version-bump a skill in this specific marketplace repo — not for general Claude Code skill authoring (structuring a SKILL.md's content) and not for consuming a plugin (see this repo's README Install section)."
-version: "1.0.0"
+version: "1.0.1"
 ---
 
 # Marketplace Release
@@ -40,9 +40,7 @@ mismatch across these files is a bug, not three independent numbers.
 name=<skill-name>
 version=<x.y.z>   # must equal all three fields checked above
 
-cd plugins/$name/skills/$name
-zip -r "../../../${name}-v${version}.zip" .
-cd ../../..
+(cd "plugins/$name/skills/$name" && zip -r - .) > "${name}-v${version}.zip"
 
 gh release create "${name}-v${version}" "${name}-v${version}.zip" \
   --title "${name} v${version}" \
