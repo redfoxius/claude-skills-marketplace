@@ -44,9 +44,7 @@ skill, not the whole marketplace.
 name=golang-architecture
 version=1.0.0
 
-cd plugins/$name/skills/$name
-zip -r "../../../${name}-v${version}.zip" .
-cd ../../..
+(cd "plugins/$name/skills/$name" && zip -r - .) > "${name}-v${version}.zip"
 
 gh release create "${name}-v${version}" "${name}-v${version}.zip" \
   --title "${name} v${version}" \
