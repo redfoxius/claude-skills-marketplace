@@ -24,3 +24,35 @@ skills I use in my own projects.
 2. Add an entry to `plugins` in `.claude-plugin/marketplace.json` with
    `"source": "./plugins/<name>"`.
 3. Commit and push — no build step, no publish action.
+
+## Releasing a skill version
+
+Every skill carries its version in three places that must stay in sync:
+`plugins/<name>/.claude-plugin/plugin.json`, the matching entry in
+`.claude-plugin/marketplace.json`, and the `version` frontmatter field in
+`plugins/<name>/skills/<name>/SKILL.md`.
+
+A GitHub Release publishes that version as a standalone, versioned zip
+archive of the skill's contents — useful for anything that consumes a
+skill by URL rather than through `/plugin install` (e.g. importing a
+single skill into another tool's own skill-import feature). Tags are
+namespaced per skill (`<name>-v<version>`) since one release covers one
+skill, not the whole marketplace.
+
+```bash
+name=golang-architecture
+version=1.0.0
+
+cd plugins/$name/skills/$name
+zip -r "../../../${name}-v${version}.zip" SKILL.md examples.md README.md
+cd ../../..
+
+gh release create "${name}-v${version}" "${name}-v${version}.zip" \
+  --title "${name} v${version}" \
+  --notes "Release notes for this version."
+rm "${name}-v${version}.zip"
+```
+
+Bump all three version fields together before tagging a new release —
+mismatched versions across `plugin.json`, `marketplace.json`, and
+`SKILL.md` are a bug, not three independent version numbers.
