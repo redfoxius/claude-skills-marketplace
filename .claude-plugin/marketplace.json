@@ -17,6 +17,19 @@
       "repository": "https://github.com/redfoxius/claude-skills-marketplace",
       "license": "MIT",
       "keywords": ["go", "golang", "architecture", "hexagonal", "onion-architecture", "ports-and-adapters"]
+    },
+    {
+      "name": "frontend-ui-architecture",
+      "source": "./plugins/frontend-ui-architecture",
+      "description": "Defines where frontend code lives and how it's layered: folder/feature structure, component-folder anatomy, component splitting, constants placement, utils vs helpers vs services, business-logic placement, types organization, and barrel-file conventions for plain React and Next.js App Router apps.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["react", "nextjs", "frontend", "architecture", "folder-structure"]
     }
   ]
 }
