@@ -16,6 +16,7 @@ skills I use in my own projects.
 |--------|-------------|
 | [golang-architecture](plugins/golang-architecture) | Forces Go-idiomatic package boundaries and dependency direction: domain/application packages never import a concrete infra package directly, ports are interfaces declared by the consumer, one composition root wires every adapter. |
 | [frontend-ui-architecture](plugins/frontend-ui-architecture) | Where frontend code lives and how it's layered — folder/feature structure, component-folder anatomy, business-logic placement, types organization, barrel-file conventions for React and Next.js App Router. |
+| [marketplace-release](plugins/marketplace-release) | Publishes a skill to this repo — scaffolding a new skill or packaging and tagging a versioned GitHub Release for an existing one, keeping `plugin.json`/`marketplace.json`/`SKILL.md` version fields in sync. |
 
 ## Adding a new skill
 
@@ -44,7 +45,7 @@ name=golang-architecture
 version=1.0.0
 
 cd plugins/$name/skills/$name
-zip -r "../../../${name}-v${version}.zip" SKILL.md examples.md README.md
+zip -r "../../../${name}-v${version}.zip" .
 cd ../../..
 
 gh release create "${name}-v${version}" "${name}-v${version}.zip" \

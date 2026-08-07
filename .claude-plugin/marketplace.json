@@ -30,6 +30,19 @@
       "repository": "https://github.com/redfoxius/claude-skills-marketplace",
       "license": "MIT",
       "keywords": ["react", "nextjs", "frontend", "architecture", "folder-structure"]
+    },
+    {
+      "name": "marketplace-release",
+      "source": "./plugins/marketplace-release",
+      "description": "Publishes a skill to the redfoxius/claude-skills-marketplace repo: scaffolding a new skill's plugin.json/SKILL.md/marketplace.json entry, or packaging and tagging a versioned GitHub Release (zip + <name>-v<version> tag) for an existing one, keeping plugin.json/marketplace.json/SKILL.md version fields in sync.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["meta", "release", "versioning", "plugin-marketplace", "claude-code"]
     }
   ]
 }
