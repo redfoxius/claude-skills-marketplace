@@ -12,11 +12,11 @@ skills I use in my own projects.
 
 ## Plugins
 
-| Plugin | Description |
-|--------|-------------|
-| [golang-architecture](plugins/golang-architecture) | Forces Go-idiomatic package boundaries and dependency direction: domain/application packages never import a concrete infra package directly, ports are interfaces declared by the consumer, one composition root wires every adapter. |
-| [frontend-ui-architecture](plugins/frontend-ui-architecture) | Where frontend code lives and how it's layered — folder/feature structure, component-folder anatomy, business-logic placement, types organization, barrel-file conventions for React and Next.js App Router. |
-| [marketplace-release](plugins/marketplace-release) | Publishes a skill to this repo — scaffolding a new skill or packaging and tagging a versioned GitHub Release for an existing one, keeping `plugin.json`/`marketplace.json`/`SKILL.md` version fields in sync. |
+| Plugin | Description | Release |
+|--------|-------------|---------|
+| [golang-architecture](plugins/golang-architecture) | Forces Go-idiomatic package boundaries and dependency direction: domain/application packages never import a concrete infra package directly, ports are interfaces declared by the consumer, one composition root wires every adapter. | [v1.0.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/golang-architecture-v1.0.0) |
+| [frontend-ui-architecture](plugins/frontend-ui-architecture) | Where frontend code lives and how it's layered — folder/feature structure, component-folder anatomy, business-logic placement, types organization, barrel-file conventions for React and Next.js App Router. | [v1.0.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/frontend-ui-architecture-v1.0.0) |
+| [marketplace-release](plugins/marketplace-release) | Publishes a skill to this repo — scaffolding a new skill or packaging and tagging a versioned GitHub Release for an existing one, keeping `plugin.json`/`marketplace.json`/`SKILL.md` version fields in sync. | [v1.0.1](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/marketplace-release-v1.0.1) |
 
 ## Adding a new skill
 
