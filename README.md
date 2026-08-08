@@ -14,7 +14,7 @@ skills I use in my own projects.
 
 | Plugin | Description | Release |
 |--------|-------------|---------|
-| [golang-architecture](plugins/golang-architecture) | Forces Go-idiomatic package boundaries and dependency direction: domain/application packages never import a concrete infra package directly, ports are interfaces declared by the consumer, one composition root wires every adapter. | [v1.0.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/golang-architecture-v1.0.0) |
+| [golang-architecture](plugins/golang-architecture) | Forces Go-idiomatic package boundaries and dependency direction: domain/application packages never import a concrete infra package directly, ports are interfaces declared by the consumer, one composition root wires every adapter. | [v1.1.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/golang-architecture-v1.1.0) |
 | [frontend-ui-architecture](plugins/frontend-ui-architecture) | Where frontend code lives and how it's layered — folder/feature structure, component-folder anatomy, business-logic placement, types organization, barrel-file conventions for React and Next.js App Router. | [v1.0.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/frontend-ui-architecture-v1.0.0) |
 | [marketplace-release](plugins/marketplace-release) | Publishes a skill to this repo — scaffolding a new skill, or running `scripts/release_skill.py` to zip, tag, publish a GitHub Release, and update this table's release link for an existing one. | [v1.1.0](https://github.com/redfoxius/claude-skills-marketplace/releases/tag/marketplace-release-v1.1.0) |
 
