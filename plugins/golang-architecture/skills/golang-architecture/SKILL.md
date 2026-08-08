@@ -1,7 +1,7 @@
 ---
 name: golang-architecture
 description: "Forces Go-idiomatic package boundaries and dependency direction for backend modules: domain/business-logic packages never import a concrete infrastructure package (a DB driver, an ORM, a specific HTTP framework, a broker client) directly, ports are interfaces declared by the consumer package rather than pre-declared by the producer (the Go-idiomatic inversion of classic Onion/Hexagonal ports), and every concrete adapter is constructed in one composition root (cmd/<app>/main.go by default, google/wire for large static graphs, uber-go/fx only for lifecycle-heavy modular apps). Use when starting a new Go service, adding a new package or external integration, reviewing a Go PR for layering violations, or deciding which package new logic belongs in. Architecture and dependency direction only — NOT framework routing mechanics (Gin/Echo/Fiber/Chi handler syntax) and NOT ORM/query mechanics (GORM/sqlc/sqlx/pgx query-writing)."
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # Golang Architecture (Backend)
@@ -177,6 +177,38 @@ layer:
   without the application layer knowing *how* — the domain and application
   layers just pass the context through, they don't inspect it.
 
+## Concurrency Ownership (HIGH)
+
+Concurrency decisions are a layering concern too — the question isn't just
+*is this code race-free*, it's *which layer is allowed to start a
+goroutine and who's responsible for stopping it*.
+
+- A domain/application method stays synchronous. If a use case needs
+  background work, that's expressed as a port (an interface method); the
+  concrete "this runs in a goroutine" decision lives in an adapter or a
+  dedicated worker type wired up in the composition root — never inline
+  inside a `Service` method as a bare `go func(){...}()`.
+- Any goroutine a package does start must have a lifetime tied to the
+  `context.Context` it was given, plus something that waits for it —
+  `errgroup.Group`, `sync.WaitGroup`, or an observable channel close.
+  "Fire and forget" with no context and nothing waiting on it is a leak,
+  not a shortcut.
+- Aggregate concurrent calls across ports with `golang.org/x/sync/errgroup`
+  (`errgroup.WithContext`) instead of hand-rolled goroutines writing into a
+  shared variable — it gets first-error cancellation and safe result
+  aggregation for free; the hand-rolled version usually forgets the mutex
+  or the `WaitGroup`.
+- The composition root owns process-lifetime shutdown: listen for
+  `SIGINT`/`SIGTERM` (`signal.NotifyContext`), cancel the root context,
+  call `http.Server.Shutdown`, and wait for any background workers it
+  started before `main` returns. A bare `http.ListenAndServe` with no
+  shutdown path drops in-flight requests and leaks workers on every
+  deploy.
+- A channel has exactly one owner — the goroutine that creates it is the
+  one that closes it, never the receiver. If it's unclear which side
+  should close a channel, that's usually a sign an `errgroup`/context
+  signal should replace it, not that the ownership needs documenting.
+
 ## Testability Follows From the Rule (HIGH)
 
 - Because the application layer depends on interfaces it declares itself,
@@ -210,3 +242,12 @@ Treat any of these as a layering violation to fix, not a style nit:
 - Package-by-layer top-level structure (`internal/controllers`,
   `internal/services`, `internal/repositories` as siblings) instead of
   package-by-dependency or package-by-concern.
+- A `Service`/use-case method that spawns `go func(){...}()` internally
+  with no context, no wait mechanism, and no way for the caller to observe
+  completion or error.
+- Concurrent fan-out over ports done with raw goroutines writing into a
+  shared variable instead of `errgroup`-based (or mutex-protected)
+  aggregation.
+- A composition root with no shutdown path — no signal handling, no
+  `Server.Shutdown`, no draining of background workers before `main`
+  returns.

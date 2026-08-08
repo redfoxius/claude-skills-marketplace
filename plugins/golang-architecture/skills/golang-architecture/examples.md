@@ -324,3 +324,163 @@ func (s *EventStore) Insert(ctx context.Context, e webhooks.Event) error {
 `VerifySignature` and `Service.HandleGitHub` are now testable with a fake
 `Store` and no database — the same testability-follows-from-the-rule
 argument the skill's `SKILL.md` makes.
+
+## 5. Concurrency ownership — before/after
+
+Continuing the `orders` example: placing an order should also notify a
+downstream system, and a `Summary` use case needs to fetch orders and
+billing balance concurrently.
+
+**Bad** — fire-and-forget goroutine inside a `Service` method: no context,
+nothing waits for it, no way to observe an error:
+
+```go
+// ❌ internal/orders/service.go
+func (s *Service) Place(ctx context.Context, customerID string, total int64) (Order, error) {
+	if total <= 0 {
+		return Order{}, errors.New("total must be positive")
+	}
+	o := Order{ID: newID(), CustomerID: customerID, Total: total, PlacedAt: time.Now()}
+	if err := s.repo.Insert(ctx, o); err != nil {
+		return Order{}, fmt.Errorf("insert order: %w", err)
+	}
+
+	go s.notifier.Notify(o) // ❌ no ctx, no wait, errors vanish, leaks on shutdown
+
+	return o, nil
+}
+```
+
+**Good** — the use case stays synchronous and treats notification as a
+port call like any other. If "best-effort async" is a real requirement,
+that decision (and the goroutine's lifecycle) belongs inside the
+`notifier` adapter or a worker wired up in `main.go` — not inline in the
+service:
+
+```go
+// ✅ internal/orders/service.go
+func (s *Service) Place(ctx context.Context, customerID string, total int64) (Order, error) {
+	if total <= 0 {
+		return Order{}, errors.New("total must be positive")
+	}
+	o := Order{ID: newID(), CustomerID: customerID, Total: total, PlacedAt: time.Now()}
+	if err := s.repo.Insert(ctx, o); err != nil {
+		return Order{}, fmt.Errorf("insert order: %w", err)
+	}
+	if err := s.notifier.Notify(ctx, o); err != nil {
+		return Order{}, fmt.Errorf("notify order placed: %w", err)
+	}
+	return o, nil
+}
+```
+
+**Bad** — concurrent fan-out over two ports using raw goroutines and a
+shared variable: `err` is written from two goroutines with no
+synchronization, a data race `go test -race` will catch:
+
+```go
+// ❌ internal/orders/service.go
+func (s *Service) Summary(ctx context.Context, customerID string) (Summary, error) {
+	var sum Summary
+	var err error
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		orders, e := s.repo.ListByCustomer(ctx, customerID)
+		if e != nil {
+			err = e // ❌ race: written from two goroutines, read after Wait with no sync
+		}
+		sum.Orders = orders
+	}()
+	go func() {
+		defer wg.Done()
+		balance, e := s.billing.Balance(ctx, customerID)
+		if e != nil {
+			err = e
+		}
+		sum.Balance = balance
+	}()
+
+	wg.Wait()
+	return sum, err
+}
+```
+
+**Good** — `errgroup.WithContext` aggregates results safely and cancels
+the sibling call on first error; each goroutine only ever writes its own
+field of `sum`, so there's no shared mutable state to race on:
+
+```go
+// ✅ internal/orders/service.go
+func (s *Service) Summary(ctx context.Context, customerID string) (Summary, error) {
+	g, ctx := errgroup.WithContext(ctx)
+	var sum Summary
+
+	g.Go(func() error {
+		orders, err := s.repo.ListByCustomer(ctx, customerID)
+		if err != nil {
+			return fmt.Errorf("list orders: %w", err)
+		}
+		sum.Orders = orders
+		return nil
+	})
+	g.Go(func() error {
+		balance, err := s.billing.Balance(ctx, customerID)
+		if err != nil {
+			return fmt.Errorf("get balance: %w", err)
+		}
+		sum.Balance = balance
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return Summary{}, err
+	}
+	return sum, nil
+}
+```
+
+**Bad** — composition root with no shutdown path: `main` blocks forever,
+a deploy or `SIGTERM` kills in-flight requests outright:
+
+```go
+// ❌ cmd/api/main.go
+func main() {
+	// ... wiring ...
+	log.Info("listening", "addr", ":8080")
+	http.ListenAndServe(":8080", r) // ❌ no signal handling, no drain
+}
+```
+
+**Good** — the composition root owns the shutdown sequence: cancel on
+signal, stop accepting new requests, let in-flight ones finish within a
+deadline:
+
+```go
+// ✅ cmd/api/main.go
+func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	// ... wiring ...
+	srv := &http.Server{Addr: ":8080", Handler: r}
+
+	go func() {
+		log.Info("listening", "addr", srv.Addr)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Error("serve", "err", err)
+		}
+	}()
+
+	<-ctx.Done()
+	log.Info("shutting down")
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Error("shutdown", "err", err)
+	}
+}
+```
