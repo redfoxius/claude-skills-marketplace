@@ -1,0 +1,13 @@
+{
+  "name": "architecture-reviewer",
+  "displayName": "Architecture Reviewer",
+  "version": "1.0.0",
+  "description": "Read-only agent that reviews a diff, PR, branch, or directory for architectural-boundary violations, routing each touched file to the right architecture skill (onion-architecture, frontend-ui-architecture, golang-architecture) and citing every finding to file:line. Never edits code.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "architecture", "code-review", "onion-architecture"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "test-writer",
+  "displayName": "Test Writer",
+  "version": "1.0.0",
+  "description": "Writes or extends tests for UI and backend code, applying each package's own test conventions and always running the real test command to self-verify. Only touches test files, never production code.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "testing", "test-writer"]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "planner",
+  "displayName": "Planner",
+  "version": "1.0.0",
+  "description": "Turns a feature/bugfix request into a structured Development Plan, reading each touched module's architectural constraints and gotchas so the plan can't contradict rules the implementer will later be bound by. Never writes code.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "planning", "development-plan"]
+}

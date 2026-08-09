@@ -1,0 +1,13 @@
+{
+  "name": "researcher",
+  "displayName": "Researcher",
+  "version": "1.0.0",
+  "description": "Read-only research agent for repository and external investigation — finds existing code, patterns, or history, or looks up documentation, always backing findings with file:line or source citations.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "research", "investigation"]
+}

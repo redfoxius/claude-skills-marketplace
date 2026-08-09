@@ -43,6 +43,97 @@
       "repository": "https://github.com/redfoxius/claude-skills-marketplace",
       "license": "MIT",
       "keywords": ["meta", "release", "versioning", "plugin-marketplace", "claude-code"]
+    },
+    {
+      "name": "architecture-reviewer",
+      "source": "./plugins/architecture-reviewer",
+      "description": "Read-only agent that reviews a diff, PR, branch, or directory for architectural-boundary violations, routing each touched file to the right architecture skill and citing every finding to file:line. Never edits code.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "architecture", "code-review", "onion-architecture"]
+    },
+    {
+      "name": "doc-writer",
+      "source": "./plugins/doc-writer",
+      "description": "Turns an already-implemented feature (plan doc, PR, or commit range) into feature-facing reference/explanation documentation with Mermaid diagrams, linking out to existing docs instead of duplicating them.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "documentation", "mermaid", "technical-writing"]
+    },
+    {
+      "name": "implementer",
+      "source": "./plugins/implementer",
+      "description": "Executes an already-written Development Plan across frontend and backend packages, applying the relevant project skills per file and self-verifying with each package's test/typecheck commands.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "implementation", "development-plan"]
+    },
+    {
+      "name": "plan-verifier",
+      "source": "./plugins/plan-verifier",
+      "description": "Checks already-finished code against every point of a Development Plan and its Implementation Report, producing a MET/NOT MET/UNVERIFIABLE verdict per criterion backed by file:line evidence or real command output.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "verification", "development-plan", "code-review"]
+    },
+    {
+      "name": "planner",
+      "source": "./plugins/planner",
+      "description": "Turns a feature/bugfix request into a structured Development Plan, reading each touched module's architectural constraints and gotchas so the plan can't contradict rules the implementer will later be bound by.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "planning", "development-plan"]
+    },
+    {
+      "name": "researcher",
+      "source": "./plugins/researcher",
+      "description": "Read-only research agent for repository and external investigation — finds existing code, patterns, or history, or looks up documentation, always backing findings with file:line or source citations.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "research", "investigation"]
+    },
+    {
+      "name": "test-writer",
+      "source": "./plugins/test-writer",
+      "description": "Writes or extends tests for UI and backend code, applying each package's own test conventions and always running the real test command to self-verify. Only touches test files, never production code.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Oleksandr Kolomoiets"
+      },
+      "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+      "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+      "license": "MIT",
+      "keywords": ["claude-code", "subagent", "testing", "test-writer"]
     }
   ]
 }

@@ -1,0 +1,13 @@
+{
+  "name": "implementer",
+  "displayName": "Implementer",
+  "version": "1.0.0",
+  "description": "Executes an already-written Development Plan across frontend and backend packages, applying the relevant project skills per file and running each package's test/typecheck commands to self-verify. Does not review architecture/security or open PRs.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "implementation", "development-plan"]
+}

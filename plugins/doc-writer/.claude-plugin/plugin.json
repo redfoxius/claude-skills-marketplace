@@ -1,0 +1,13 @@
+{
+  "name": "doc-writer",
+  "displayName": "Doc Writer",
+  "version": "1.0.0",
+  "description": "Turns an already-implemented feature (plan doc, PR, or commit range) into feature-facing reference/explanation documentation with Mermaid diagrams, deciding correct docs placement and linking out to existing docs instead of duplicating them.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "documentation", "mermaid", "technical-writing"]
+}

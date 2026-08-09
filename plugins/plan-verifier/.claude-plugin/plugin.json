@@ -1,0 +1,13 @@
+{
+  "name": "plan-verifier",
+  "displayName": "Plan Verifier",
+  "version": "1.0.0",
+  "description": "Checks already-finished code against every point of a Development Plan and its Implementation Report, producing a MET/NOT MET/UNVERIFIABLE verdict per criterion backed by file:line evidence or real command output. Read-only.",
+  "author": {
+    "name": "Oleksandr Kolomoiets"
+  },
+  "homepage": "https://github.com/redfoxius/claude-skills-marketplace",
+  "repository": "https://github.com/redfoxius/claude-skills-marketplace",
+  "license": "MIT",
+  "keywords": ["claude-code", "subagent", "verification", "development-plan", "code-review"]
+}
