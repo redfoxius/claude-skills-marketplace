@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Release a skill in this marketplace: verify plugin.json/marketplace.json/
-SKILL.md agree on a version, zip the skill directory, publish it as a
-GitHub Release tagged <name>-v<version>, and update that skill's row in the
-README Plugins table with a link to the new release.
+"""Release a plugin (skill or agent) in this marketplace: verify
+plugin.json/marketplace.json agree on a version (and SKILL.md's frontmatter
+too, for skills — agent files carry no version of their own), zip the
+component directory, publish it as a GitHub Release tagged <name>-v<version>,
+and update that plugin's row in the README Plugins table with a link to the
+new release.
 
-Usage: scripts/release_skill.py <skill-name> [release notes...]
+Usage: scripts/release_skill.py <plugin-name> [release notes...]
 
 Leaves the README change unstaged — review the diff, then:
   git add README.md && git commit -m "docs: <name> vX.Y.Z release link"
@@ -24,21 +26,47 @@ def fail(msg: str) -> None:
     sys.exit(1)
 
 
+def find_component(repo_root: Path, name: str):
+    """Locate the plugin's skill or agent file and return
+    (component_type, component_dir, component_version). Skills carry their
+    own `version` frontmatter in SKILL.md; agent files don't define a
+    version at all, so component_version is None for agents — the version
+    check falls back to plugin.json vs. marketplace.json agreement only."""
+    skill_md = repo_root / "plugins" / name / "skills" / name / "SKILL.md"
+    agent_md = repo_root / "plugins" / name / "agents" / f"{name}.md"
+
+    if skill_md.exists():
+        text = skill_md.read_text()
+        m = re.search(r'^version:\s*"([^"]+)"', text, re.MULTILINE)
+        if not m:
+            fail(f"no version frontmatter in {skill_md.relative_to(repo_root)}")
+        return "skill", skill_md.parent, m.group(1)
+
+    if agent_md.exists():
+        return "agent", agent_md.parent, None
+
+    fail(
+        f"no plugins/{name}/skills/{name}/SKILL.md or "
+        f"plugins/{name}/agents/{name}.md found for '{name}'"
+    )
+
+
 def main() -> None:
     if len(sys.argv) < 2:
-        fail("usage: release_skill.py <skill-name> [release notes...]")
+        fail("usage: release_skill.py <plugin-name> [release notes...]")
     name = sys.argv[1]
     notes = " ".join(sys.argv[2:]) or f"Release {name}."
 
     repo_root = Path(__file__).resolve().parent.parent
     plugin_json_path = repo_root / "plugins" / name / ".claude-plugin" / "plugin.json"
-    skill_md_path = repo_root / "plugins" / name / "skills" / name / "SKILL.md"
     marketplace_json_path = repo_root / ".claude-plugin" / "marketplace.json"
     readme_path = repo_root / "README.md"
 
-    for p in (plugin_json_path, skill_md_path, marketplace_json_path, readme_path):
+    for p in (plugin_json_path, marketplace_json_path, readme_path):
         if not p.exists():
             fail(f"missing {p.relative_to(repo_root)}")
+
+    component_type, component_dir, component_version = find_component(repo_root, name)
 
     plugin_version = json.loads(plugin_json_path.read_text()).get("version")
 
@@ -48,18 +76,13 @@ def main() -> None:
         fail(f"no marketplace.json entry for {name}")
     marketplace_version = entry.get("version")
 
-    skill_md = skill_md_path.read_text()
-    m = re.search(r'^version:\s*"([^"]+)"', skill_md, re.MULTILINE)
-    if not m:
-        fail(f"no version frontmatter in {skill_md_path.relative_to(repo_root)}")
-    skill_version = m.group(1)
+    versions = {"plugin.json": plugin_version, "marketplace.json": marketplace_version}
+    if component_version is not None:
+        versions["SKILL.md"] = component_version
 
-    if len({plugin_version, marketplace_version, skill_version}) != 1:
-        fail(
-            "version mismatch — bump all three before releasing: "
-            f"plugin.json={plugin_version} marketplace.json={marketplace_version} "
-            f"SKILL.md={skill_version}"
-        )
+    if len(set(versions.values())) != 1:
+        mismatch = ", ".join(f"{k}={v}" for k, v in versions.items())
+        fail(f"version mismatch — bump all together before releasing: {mismatch}")
     version = plugin_version
     tag = f"{name}-v{version}"
 
@@ -70,12 +93,11 @@ def main() -> None:
     if tag in [t["tagName"] for t in json.loads(existing.stdout)]:
         fail(f"release {tag} already exists — bump the version first")
 
-    skill_dir = skill_md_path.parent
     zip_path = repo_root / f"{tag}.zip"
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
-        for f in sorted(skill_dir.rglob("*")):
+        for f in sorted(component_dir.rglob("*")):
             if f.is_file():
-                zf.write(f, f.relative_to(skill_dir))
+                zf.write(f, f.relative_to(component_dir))
 
     try:
         subprocess.run(
@@ -104,11 +126,11 @@ def main() -> None:
     if not updated:
         fail(
             f"no README table row found for {name} — add one first "
-            "(see 'Adding a new skill')"
+            "(see 'Adding a new skill' / 'Adding a new agent')"
         )
     readme_path.write_text("".join(lines))
 
-    print(f"Released {tag}: {release_url}")
+    print(f"Released {tag} ({component_type}): {release_url}")
     print("README updated — review and commit:")
     print(f"  git add README.md && git commit -m 'docs: {name} v{version} release link'")
 

@@ -1,13 +1,14 @@
 ---
 name: marketplace-release
-description: "Publishes a skill to the redfoxius/claude-skills-marketplace Claude Code plugin repo: scaffolding plugins/<name>/.claude-plugin/plugin.json + skills/<name>/SKILL.md + a matching entry in .claude-plugin/marketplace.json for a brand-new skill, or running scripts/release_skill.py to package, tag, and publish a GitHub Release for a version bump of an existing skill. That script enforces plugin.json/marketplace.json/SKILL.md version agreement, refuses to re-tag an existing release, and rewrites the skill's README table row with a link to the new release — nothing about a release is a manual doc-editing step. Use when asked to publish, release, or version-bump a skill in this specific marketplace repo — not for general Claude Code skill authoring (structuring a SKILL.md's content) and not for consuming a plugin (see this repo's README Install section)."
-version: "1.1.0"
+description: "Publishes a skill or agent to the redfoxius/claude-skills-marketplace Claude Code plugin repo: scaffolding plugins/<name>/.claude-plugin/plugin.json + skills/<name>/SKILL.md (or agents/<name>.md) + a matching entry in .claude-plugin/marketplace.json for a brand-new plugin, or running scripts/release_skill.py to package, tag, and publish a GitHub Release for a version bump of an existing one. That script auto-detects skill vs. agent, enforces plugin.json/marketplace.json version agreement (plus SKILL.md's own version frontmatter for skills — agent files carry no version field), refuses to re-tag an existing release, and rewrites the plugin's README table row with a link to the new release — nothing about a release is a manual doc-editing step. Use when asked to publish, release, or version-bump a skill or agent in this specific marketplace repo — not for general Claude Code skill/agent authoring and not for consuming a plugin (see this repo's README Install section)."
+version: "1.2.0"
 ---
 
 # Marketplace Release
 
-Two workflows in `redfoxius/claude-skills-marketplace`: adding a brand-new
-skill, and releasing a new version of one that already exists.
+Two workflows in `redfoxius/claude-skills-marketplace`: adding a
+brand-new plugin (a skill or an agent), and releasing a new version of
+one that already exists — `scripts/release_skill.py` handles both shapes.
 
 ## Adding a brand-new skill
 
@@ -28,31 +29,53 @@ skill, and releasing a new version of one that already exists.
    `| [<name>](plugins/<name>)` at line start.
 5. Commit and push — no build step, no publish action for this step.
 
+## Adding a brand-new agent
+
+Same shape, but Claude Code discovers agents from an `agents/` directory
+instead of `skills/`, and the agent file itself has no `version`
+frontmatter:
+
+1. `plugins/<name>/.claude-plugin/plugin.json` — same fields as a skill's,
+   `version: "1.0.0"`.
+2. `plugins/<name>/agents/<name>.md` — the subagent file itself (`name`,
+   `description`, `tools`, `model` frontmatter, then its prompt body). No
+   `version` field belongs here — the release script doesn't look for one.
+3. Add an entry to `.claude-plugin/marketplace.json`, same as a skill.
+4. Add a row to the `## Plugins` table in `README.md`, `—` in Release.
+5. Commit and push.
+
 ## Releasing a version (new or bumped)
 
-Bump `version` in `plugin.json`, the `marketplace.json` entry, and the
-`SKILL.md` frontmatter together — the release script refuses to run if
-they disagree, so there's no "forgot one of the three" failure mode. Then:
+For a **skill**: bump `version` in `plugin.json`, the `marketplace.json`
+entry, and the `SKILL.md` frontmatter together — the release script
+refuses to run if they disagree. For an **agent**: bump `plugin.json` and
+`marketplace.json` together (there's no third file — the agent `.md` has
+no version frontmatter). Then, for either:
 
 ```bash
-python3 scripts/release_skill.py <skill-name> "What changed in this version."
+python3 scripts/release_skill.py <plugin-name> "What changed in this version."
 ```
 
 This single command does everything a release needs:
 
+- **Detect** — checks for `plugins/<name>/skills/<name>/SKILL.md` first,
+  then `plugins/<name>/agents/<name>.md`, to decide which shape `<name>`
+  is and which version fields apply.
 - **Preflight** — reads the version out of `plugin.json`, the matching
-  `marketplace.json` entry, and `SKILL.md`'s frontmatter; aborts if they
-  don't all match, and aborts if `<name>-v<version>` is already tagged
-  (no silent re-release).
-- **Package** — zips `plugins/<name>/skills/<name>/` in full (whatever
-  files it contains — `SKILL.md` alone or with `examples.md`/`README.md`)
-  via Python's `zipfile`, not a shell `cd`/relative-path recipe — the kind
-  of thing that silently landed a zip one directory off in an earlier
-  version of this process.
+  `marketplace.json` entry, and (skills only) `SKILL.md`'s frontmatter;
+  aborts and names exactly which file disagreed if they don't all match,
+  and aborts if `<name>-v<version>` is already tagged (no silent
+  re-release).
+- **Package** — zips the component directory in full
+  (`plugins/<name>/skills/<name>/` for a skill — whatever files it
+  contains, `SKILL.md` alone or with `examples.md`/`README.md` — or
+  `plugins/<name>/agents/` for an agent) via Python's `zipfile`, not a
+  shell `cd`/relative-path recipe — the kind of thing that silently
+  landed a zip one directory off in an earlier version of this process.
 - **Publish** — `gh release create <name>-v<version>` with that zip as the
-  asset, tag namespaced per skill since one release covers one skill's zip,
-  not the whole marketplace.
-- **Update docs** — rewrites the Release cell of that skill's row in the
+  asset, tag namespaced per plugin since one release covers one plugin's
+  zip, not the whole marketplace.
+- **Update docs** — rewrites the Release cell of that plugin's row in the
   README Plugins table to `[vX.Y.Z](<release-url>)`. This is the step that
   used to be a separate manual edit, easy to forget right after tagging a
   release — now it's not a separate step at all.
@@ -66,6 +89,6 @@ git push origin main
 
 The published release asset gives a stable download URL
 (`.../releases/download/<name>-v<version>/<name>-v<version>.zip`) for
-anything that consumes a skill by URL rather than through
-`/plugin install` — e.g. importing a single skill into another tool's own
+anything that consumes a skill or agent by URL rather than through
+`/plugin install` — e.g. importing a single one into another tool's own
 skill-import feature.

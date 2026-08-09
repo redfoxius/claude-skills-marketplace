@@ -47,32 +47,35 @@ directory instead of `skills/`:
 2. Add an entry to `plugins` in `.claude-plugin/marketplace.json` with
    `"source": "./plugins/<name>"`.
 3. Add a row to the `## Plugins` table above, with `—` in the Release
-   column.
+   column — `scripts/release_skill.py` fills it in on the first release.
 4. Commit and push — no build step, no publish action.
 
-`scripts/release_skill.py` only packages the `skills/<name>/SKILL.md`
-shape today (it has no `version` frontmatter to check for an agent file),
-so agent plugins currently ship via `/plugin install` only — no tagged
-GitHub Release/zip asset yet. Extend the script if that's needed later.
+## Releasing a plugin version (skill or agent)
 
-## Releasing a skill version
+`scripts/release_skill.py` releases both shapes — it auto-detects which
+one `<name>` is by checking for `plugins/<name>/skills/<name>/SKILL.md`
+first, then `plugins/<name>/agents/<name>.md`.
 
-Every skill carries its version in three places that must stay in sync:
-`plugins/<name>/.claude-plugin/plugin.json`, the matching entry in
+Every **skill** carries its version in three places that must stay in
+sync: `plugins/<name>/.claude-plugin/plugin.json`, the matching entry in
 `.claude-plugin/marketplace.json`, and the `version` frontmatter field in
-`plugins/<name>/skills/<name>/SKILL.md`. Bump all three together, then:
+`plugins/<name>/skills/<name>/SKILL.md`. Every **agent** carries it in two
+— `plugin.json` and `marketplace.json` only, since an agent's `.md` file
+(`name`/`description`/`tools`/`model` frontmatter, then its prompt body)
+has no `version` field of its own. Bump whichever apply together, then:
 
 ```bash
-python3 scripts/release_skill.py <skill-name> "What changed in this version."
+python3 scripts/release_skill.py <plugin-name> "What changed in this version."
 ```
 
-The script verifies the three version fields agree (aborting otherwise),
-refuses to re-tag a version that's already released, zips
-`plugins/<name>/skills/<name>/`, publishes it as a GitHub Release tagged
-`<name>-v<version>` (namespaced per skill — one release covers one skill's
-zip, not the whole marketplace), and rewrites that skill's row in the
-Plugins table above with a link to the new release. The README change is
-left unstaged for review:
+The script verifies those version fields agree (aborting otherwise, and
+naming exactly which file disagreed), refuses to re-tag a version that's
+already released, zips the component directory
+(`plugins/<name>/skills/<name>/` or `plugins/<name>/agents/`), publishes
+it as a GitHub Release tagged `<name>-v<version>` (namespaced per plugin —
+one release covers one plugin's zip, not the whole marketplace), and
+rewrites that plugin's row in the Plugins table above with a link to the
+new release. The README change is left unstaged for review:
 
 ```bash
 git add README.md && git commit -m "docs: <name> vX.Y.Z release link"
@@ -81,6 +84,6 @@ git push origin main
 
 The published release asset gives a stable download URL
 (`.../releases/download/<name>-v<version>/<name>-v<version>.zip`) — useful
-for anything that consumes a skill by URL rather than through
-`/plugin install` (e.g. importing a single skill into another tool's own
+for anything that consumes a skill or agent by URL rather than through
+`/plugin install` (e.g. importing a single one into another tool's own
 skill-import feature).
