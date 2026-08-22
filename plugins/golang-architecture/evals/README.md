@@ -1,8 +1,8 @@
 # golang-architecture evals
 
-Four independent eval cases, each a tiny standalone Go project under
-`case-N-*/fixtures/` with exactly three (case-4: one) architectural
-violations planted, with no comments in the fixtures revealing what's wrong.
+Five independent eval cases, each a tiny standalone Go project under
+`case-N-*/fixtures/` with a small number of architectural violations planted,
+with no comments in the fixtures revealing what's wrong.
 
 | Case | Domain | Violations planted |
 |---|---|---|
@@ -10,6 +10,7 @@ violations planted, with no comments in the fixtures revealing what's wrong.
 | case-2-billing | billing service (kafka) | dependency rule, port inversion, composition root (adapter built twice in two constructors, `main.go` wires nothing) |
 | case-3-inventory | inventory service (gorm) | dependency rule, port inversion, composition root (connection opened via package-level `init()`) |
 | case-4-shipping | shipping service (carrier client) | **sanity check** (originally designed as a discriminating "trap"; validated not to discriminate — see below) — dependency direction and composition root are both clean; the only problem is the `Carrier` port declared in the producer package instead of the consumer. |
+| case-5-pricing | pricing service (FX rate gateway) | **validated discriminator** — dependency direction, port ownership, and composition root are all clean. Scored finding: no `context.Context` propagated across the `RateProvider` port boundary down to the HTTP call — validated 2026-08-23 in isolation (no-skill: missed entirely; with-skill: caught precisely). A second planted problem (adapter package named `gateway`, a generic role, instead of `openexchangerates`, its concrete dependency) did NOT discriminate — the with-skill run explicitly cleared it — so it's kept unscored as a bonus signal only. See case-5's case.yaml for detail. |
 
 ### Why case-4 is a sanity check, not a trap
 

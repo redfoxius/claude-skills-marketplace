@@ -1,0 +1,25 @@
+name: "golang-architecture: case-5-pricing (validated discriminator)"
+description: >
+  Pricing service with correct dependency direction, a correctly
+  consumer-declared port, and a clean single composition root — the planted
+  problem is that no context.Context propagates across the RateProvider port
+  boundary, all the way down to the concrete HTTP call. Validated 2026-08-23
+  in full isolation: the no-skill run returned "no significant architectural
+  problems"; the with-skill run correctly caught the missing-context-
+  propagation finding by name. This IS a genuine with/without-skill
+  detection delta, unlike case-4.
+
+  A second problem was also planted (the adapter package is named `gateway`
+  — a generic architectural-role name — instead of after the concrete
+  dependency it wraps, e.g. `openexchangerates`, per package-oriented
+  design) but the same validation run showed the with-skill agent explicitly
+  clearing this as fine ("no package-by-layer top-level structure were
+  found") — the skill does not appear to enforce this rule in practice, at
+  least not against this instance of the violation. Kept as an unscored
+  bonus signal only; see graders/findings.md.
+tags: ["golang-architecture", "context-propagation", "validated-discriminator"]
+prompt_file: prompt.md
+context:
+  add_dirs:
+    - fixtures/
+runs: 3
