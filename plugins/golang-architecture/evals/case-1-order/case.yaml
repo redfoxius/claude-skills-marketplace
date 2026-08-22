@@ -1,0 +1,11 @@
+name: "golang-architecture: case-1-order"
+description: >
+  Order service mixing raw database/sql + lib/pq access into business logic,
+  a producer-declared repository port, and adapter construction inside
+  NewService instead of the composition root.
+tags: ["golang-architecture", "dependency-rule", "port-inversion", "composition-root"]
+prompt_file: prompt.md
+context:
+  add_dirs:
+    - fixtures/
+runs: 3

@@ -1,0 +1,11 @@
+name: "golang-architecture: case-2-billing"
+description: >
+  Billing service where two independent constructors (Service and RetryWorker)
+  each build their own concrete Kafka writer, and the event-publisher port is
+  declared by the producer package instead of the consumer.
+tags: ["golang-architecture", "dependency-rule", "port-inversion", "composition-root"]
+prompt_file: prompt.md
+context:
+  add_dirs:
+    - fixtures/
+runs: 3

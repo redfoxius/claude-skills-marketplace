@@ -1,0 +1,11 @@
+name: "golang-architecture: case-3-inventory"
+description: >
+  Inventory service that opens its concrete gorm.DB connection as a
+  package-level init() side effect in the domain package, and declares its
+  repository port in the ORM adapter package instead of the domain package.
+tags: ["golang-architecture", "dependency-rule", "port-inversion", "composition-root"]
+prompt_file: prompt.md
+context:
+  add_dirs:
+    - fixtures/
+runs: 3
