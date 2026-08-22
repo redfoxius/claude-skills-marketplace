@@ -1,0 +1,29 @@
+name: "golang-architecture: case-6-subscription (sanity check)"
+description: >
+  Subscription service with correct dependency direction (no domain package
+  imports database/sql or any driver directly), a correctly consumer-declared
+  Store port, clean context propagation throughout, and a clean single
+  composition root — the one planted problem targets "error handling as a
+  layering concern": internal/store/postgres.go correctly translates the raw
+  database/sql sentinel (sql.ErrNoRows) into its own store.ErrNotFound at the
+  adapter boundary, but that translated sentinel is still
+  infrastructure-owned, and internal/subscription/service.go (the
+  domain/consumer) imports internal/store (the adapter/producer) solely to
+  check errors.Is(err, store.ErrNotFound) — an error-ownership inversion
+  structurally parallel to case-4's port-ownership inversion.
+
+  Originally authored as a candidate discriminator. Validated (2026-08-23,
+  fully isolated) that both the no-skill and with-skill runs catch this
+  precisely, with near-identical reasoning ("domain checking an infra-owned
+  sentinel" / "error contract should be consumer-owned") — same outcome as
+  case-4: this specific pattern (don't branch domain logic on an adapter's
+  sentinel error; translate at the boundary into a domain-owned one) is
+  common-enough Go/software-design knowledge that it does not discriminate
+  skill vs. no-skill. Kept as a precision/no-false-positive sanity check
+  instead, same role as case-4.
+tags: ["golang-architecture", "error-handling", "sanity-check"]
+prompt_file: prompt.md
+context:
+  add_dirs:
+    - fixtures/
+runs: 3

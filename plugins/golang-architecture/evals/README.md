@@ -1,6 +1,6 @@
 # golang-architecture evals
 
-Five independent eval cases, each a tiny standalone Go project under
+Six independent eval cases, each a tiny standalone Go project under
 `case-N-*/fixtures/` with a small number of architectural violations planted,
 with no comments in the fixtures revealing what's wrong.
 
@@ -11,35 +11,39 @@ with no comments in the fixtures revealing what's wrong.
 | case-3-inventory | inventory service (gorm) | dependency rule, port inversion, composition root (connection opened via package-level `init()`) |
 | case-4-shipping | shipping service (carrier client) | **sanity check** (originally designed as a discriminating "trap"; validated not to discriminate — see below) — dependency direction and composition root are both clean; the only problem is the `Carrier` port declared in the producer package instead of the consumer. |
 | case-5-pricing | pricing service (FX rate gateway) | **validated discriminator** — dependency direction, port ownership, and composition root are all clean. Scored finding: no `context.Context` propagated across the `RateProvider` port boundary down to the HTTP call — validated 2026-08-23 in isolation (no-skill: missed entirely; with-skill: caught precisely). A second planted problem (adapter package named `gateway`, a generic role, instead of `openexchangerates`, its concrete dependency) did NOT discriminate — the with-skill run explicitly cleared it — so it's kept unscored as a bonus signal only. See case-5's case.yaml for detail. |
+| case-6-subscription | subscription service (postgres store) | **sanity check** (originally designed as a candidate discriminator; validated not to discriminate — see below) — dependency direction, port ownership, context propagation, and composition root are all clean. The one planted problem is "error handling as a layering concern": the adapter (`internal/store`) correctly translates `sql.ErrNoRows` into its own `ErrNotFound` sentinel, but the domain (`internal/subscription`) then imports the adapter package solely to check that sentinel via `errors.Is`, instead of owning its own domain-level sentinel — an error-ownership inversion structurally parallel to case-4's port-ownership inversion. |
 
-### Why case-4 is a sanity check, not a trap
+### Score so far: 1 of 3 candidate discriminators actually discriminate
 
-It was originally built to test whether a generic review (no golang-architecture
-skill) would miss the port-location problem, since "interface next to its
-implementation" is conventional in many non-Go architectural traditions. On
-2026-08-23 it was validated manually (see workflow below) two ways:
+Three "does this need the skill to catch it" hypotheses have been validated
+in full isolation so far:
 
-1. Reviewed together with cases 1-3 in one batch — both the with-skill and
-   no-skill runs caught it, but this run is contaminated: having just spotted
-   the same producer-declared-port pattern three times in a row primes the
-   reviewer to look for it a fourth time, regardless of skill.
-2. Re-reviewed case-4 **in full isolation** (no other cases in context) — both
-   runs still caught it, with explicit "Go idiom" / "hexagonal inversion"
-   reasoning even without the skill.
+| Candidate | Rule | Result |
+|---|---|---|
+| case-4-shipping | port declared by producer, not consumer | **Did not discriminate** — both runs caught it, citing "Go idiom" / "hexagonal inversion" |
+| case-5-pricing | missing `context.Context` across a port boundary | **Discriminates** — no-skill run: "no significant problems"; with-skill run: caught precisely |
+| case-6-subscription | domain branching on an infra-owned error sentinel | **Did not discriminate** — both runs caught it, citing "error contract should be consumer-owned" |
 
-Conclusion: this specific pattern is common-enough general Go knowledge that
-it doesn't discriminate skill vs. no-skill, so case-4 was repurposed as a
-precision/no-false-positive check instead (does the skill still find the real
-issue without inventing problems in the parts that are genuinely clean).
-A real discriminator would need to target something more skill-specific and
-less "folk-known" — the isolated with-skill run for this fixture surfaced two
-rules that go beyond the three-axis assumption these eval cases were built
-around (context propagation across a port boundary; package-oriented naming —
-grouping a port with its adapter under a generic name like `carrier` instead
-of naming the adapter package after what it depends on, e.g. `fedex`). Those
-would be a better starting point for a genuinely discriminating case-5, since
-they're less likely to already be general reviewer folk wisdom — sourced from
-the skill's actual SKILL.md rather than its one-line catalog description.
+Takeaway: interface-shaped rules (port ownership, error-sentinel ownership —
+"the consumer should own its own contract") turn out to already be
+well-internalized general Go/software-design knowledge among capable
+reviewers, even without this skill. Context propagation across a boundary is
+the one validated exception so far — it's the kind of thing reviewers know
+*abstractly* but reliably forget to actually check for on a first pass.
+case-4 and case-6 are kept as precision/no-false-positive sanity checks
+instead (does the skill still find the real issue without inventing problems
+in the parts that are genuinely clean) rather than detection-delta tests.
+
+Each validation followed the same protocol (see workflow below): first a
+batched run (contaminated by priming — seeing the same pattern repeat across
+cases teaches the reviewer to look for it again, regardless of skill), then a
+rerun in full isolation as the actual measurement.
+
+If designing a future case-N candidate discriminator, favor rules that are
+narrow, mechanical, and easy to forget to check rather than ones that restate
+a well-known design principle (DIP/ISP) in a new location — "consumer owns
+the X" pattern-matches too easily once a reviewer has seen it once, in any
+form.
 
 Each case follows the native `claude plugin eval` layout:
 
