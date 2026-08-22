@@ -9,7 +9,36 @@ violations planted, with no comments in the fixtures revealing what's wrong.
 | case-1-order | order service (postgres + slack) | dependency rule, port inversion, composition root (adapter built inline in constructor) |
 | case-2-billing | billing service (kafka) | dependency rule, port inversion, composition root (adapter built twice in two constructors, `main.go` wires nothing) |
 | case-3-inventory | inventory service (gorm) | dependency rule, port inversion, composition root (connection opened via package-level `init()`) |
-| case-4-shipping | shipping service (carrier client) | **trap case** — dependency direction and composition root are both clean; the only problem is the `Carrier` port declared in the producer package instead of the consumer. Designed to catch reviewers who don't apply the Go-idiomatic consumer-owns-the-port rule specifically — a generic review is expected to call this code "well-architected" and miss it. |
+| case-4-shipping | shipping service (carrier client) | **sanity check** (originally designed as a discriminating "trap"; validated not to discriminate — see below) — dependency direction and composition root are both clean; the only problem is the `Carrier` port declared in the producer package instead of the consumer. |
+
+### Why case-4 is a sanity check, not a trap
+
+It was originally built to test whether a generic review (no golang-architecture
+skill) would miss the port-location problem, since "interface next to its
+implementation" is conventional in many non-Go architectural traditions. On
+2026-08-23 it was validated manually (see workflow below) two ways:
+
+1. Reviewed together with cases 1-3 in one batch — both the with-skill and
+   no-skill runs caught it, but this run is contaminated: having just spotted
+   the same producer-declared-port pattern three times in a row primes the
+   reviewer to look for it a fourth time, regardless of skill.
+2. Re-reviewed case-4 **in full isolation** (no other cases in context) — both
+   runs still caught it, with explicit "Go idiom" / "hexagonal inversion"
+   reasoning even without the skill.
+
+Conclusion: this specific pattern is common-enough general Go knowledge that
+it doesn't discriminate skill vs. no-skill, so case-4 was repurposed as a
+precision/no-false-positive check instead (does the skill still find the real
+issue without inventing problems in the parts that are genuinely clean).
+A real discriminator would need to target something more skill-specific and
+less "folk-known" — the isolated with-skill run for this fixture surfaced two
+rules that go beyond the three-axis assumption these eval cases were built
+around (context propagation across a port boundary; package-oriented naming —
+grouping a port with its adapter under a generic name like `carrier` instead
+of naming the adapter package after what it depends on, e.g. `fedex`). Those
+would be a better starting point for a genuinely discriminating case-5, since
+they're less likely to already be general reviewer folk wisdom — sourced from
+the skill's actual SKILL.md rather than its one-line catalog description.
 
 Each case follows the native `claude plugin eval` layout:
 

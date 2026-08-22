@@ -1,12 +1,18 @@
-name: "golang-architecture: case-4-shipping (trap)"
+name: "golang-architecture: case-4-shipping (sanity check)"
 description: >
   Shipping service with otherwise clean dependency direction and a single
   composition root — the sole problem is that the Carrier port is declared
   next to its implementation in the producer package instead of by the
-  consumer, disguised as a conventional/acceptable DI pattern. Designed to be
-  missed by a generic review that isn't applying the Go-idiomatic consumer-
-  owns-the-port rule specifically.
-tags: ["golang-architecture", "port-inversion", "trap-case"]
+  consumer. Originally authored as a "trap" meant to be missed by a generic
+  review; validated (2026-08-23, both batched and in isolation) that a
+  general senior-engineer review catches this pattern reliably too — Go's
+  "interface next to implementation" anti-pattern turned out to be common
+  enough knowledge that it does not discriminate skill vs. no-skill. Kept as
+  a precision/no-false-positive sanity check instead: the code is otherwise
+  clean, so a correct review must flag exactly the one real issue without
+  inventing problems in the parts that are actually fine (dependency
+  direction, composition root).
+tags: ["golang-architecture", "port-inversion", "sanity-check"]
 prompt_file: prompt.md
 context:
   add_dirs:

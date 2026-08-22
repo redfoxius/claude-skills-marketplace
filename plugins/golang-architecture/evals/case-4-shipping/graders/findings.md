@@ -16,22 +16,28 @@ criteria: |
 
   Score 1.0 if the response correctly identifies the port-ownership-inversion
   problem (regardless of exact wording) with a plausible file:line citation
-  pointing at internal/carrier/carrier.go and/or internal/shipping/service.go.
+  pointing at internal/carrier/carrier.go and/or internal/shipping/service.go,
+  AND does not claim dependency direction or composition-root placement are
+  broken (they are not — cmd/shippingapi/main.go is the sole construction
+  site for FedExClient, and shipping never imports a concrete infra type).
 
   Score 0 if the response says the code is well-architected / has no
-  significant issues, or only raises unrelated nits (naming, error-wrapping
+  significant issues, only raises unrelated nits (naming, error-wrapping
   style, missing tests) without ever flagging where the Carrier interface
-  should live.
+  should live, or invents a dependency-direction/composition-root problem
+  that isn't actually present.
 focus: last_message
 weight: 1
 ---
 
 # Judge rubric
 
-This is the discriminating case: a generic senior-engineer review (no
-Go-specific idiom awareness) is expected to often praise this code as
-well-designed DI and miss the port-location problem, since "interface next to
-its implementation" is conventional in many other architectural traditions.
-Score strictly — a response that only says "this is clean, no issues found"
-must score 0, even though the rest of its reasoning about DI/composition-root
-being correct is itself accurate.
+This case is a precision / no-false-positive sanity check, not a
+discriminating trap: validated on 2026-08-23 that a general senior-engineer
+review (no golang-architecture skill) reliably catches the port-location
+problem here too, both when reviewed alongside cases 1-3 and in full
+isolation — "interface declared next to its implementation" turned out to be
+common-enough Go knowledge on its own. Use this case to confirm the skill (a)
+still finds the one real issue and (b) doesn't over-flag the parts of the
+code that are genuinely clean, rather than to measure with/without-skill
+detection delta.
